@@ -161,8 +161,10 @@
                     if(parts.length >= 2 && parts[0].trim() !== "") {
                         let c = parts[3] ? parts[3].trim().replace(/"/g, '') : 'عام';
                         if (c && c !== "" && c !== "عام") cats.add(c);
-                        return { name: parts[0].replace(/"/g, '').trim(), price: parseInt(parts[1].replace(/[^\d]/g, '')) || 0, img: parts[2] ? parts[2].trim() : '', cat: c };
-                    }
+                        const imageSrc = (p.img && p.img.includes('image.')) 
+    ? `https://www.appsheet.com/template/gettablefileurl?appName=${encodeURIComponent('1272a917-26ca-4470-818a-63eede5d3d22')}&tableName=${encodeURIComponent('إنشاء جدول متجر إلكتروني جاهز')}&fileName=${encodeURIComponent(p.img)}` 
+    : (p.img && p.img.startsWith('http') ? p.img : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=1e3a8a&color=fff`);
+
                 }).filter(p => p && p.name);
                 document.getElementById('categories-list').innerHTML = Array.from(cats).map(c => `<button onclick="filterByCategory('${c}')" class="category-btn px-6 py-2 rounded-full font-bold bg-white text-blue-900 border-2 border-blue-900 whitespace-nowrap">${c}</button>`).join('');
                 document.getElementById('loading-screen').style.display = 'none';
