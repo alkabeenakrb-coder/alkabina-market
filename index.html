@@ -125,6 +125,9 @@
 
     <script>
         const API_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_Ja8kz5VAApLStZ9Y_erhYNqL3eXMafTSR9T8xkI82UzYQMS_efXuIyASXRKZTwYZGp69ExZB-7r3/pub?output=csv';
+        const APP_ID = '1272a917-26ca-4470-818a-63eede5d3d22';
+        const TABLE_NAME = 'إنشاء جدول متجر إلكتروني جاهز';
+
         let allProducts = [], cart = {}, currentCategory = 'الكل';
 
         function toggleChat() {
@@ -152,7 +155,18 @@
                     if(parts.length >= 2 && parts[0].trim() !== "") {
                         let c = parts[3] ? parts[3].trim().replace(/"/g, '') : 'عام';
                         if (c && c !== "" && c !== "عام") cats.add(c);
-                        return { name: parts[0].replace(/"/g, '').trim(), price: parseInt(parts[1].replace(/[^\d]/g, '')) || 0, img: parts[2] ? parts[2].trim() : '', cat: c };
+                        
+                        const rawImg = parts[2] ? parts[2].replace(/"/g, '').trim() : '';
+                        const imageSrc = (rawImg && rawImg.includes('image.')) 
+                            ? `https://www.appsheet.com/template/gettablefileurl?appName=${encodeURIComponent(APP_ID)}&tableName=${encodeURIComponent(TABLE_NAME)}&fileName=${encodeURIComponent(rawImg)}` 
+                            : (rawImg && rawImg.startsWith('http') ? rawImg : `https://ui-avatars.com/api/?name=${encodeURIComponent(parts[0].replace(/"/g, ''))}&background=facc15&color=1e3a8a`);
+                        
+                        return { 
+                            name: parts[0].replace(/"/g, '').trim(), 
+                            price: parseInt(parts[1].replace(/[^\d]/g, '')) || 0, 
+                            img: imageSrc, 
+                            cat: c 
+                        };
                     }
                 }).filter(p => p && p.name);
                 document.getElementById('categories-list').innerHTML = Array.from(cats).map(c => `<button onclick="filterByCategory('${c}')" class="category-btn px-6 py-2 rounded-full font-bold bg-white text-blue-900 border-2 border-blue-900 whitespace-nowrap">${c}</button>`).join('');
@@ -167,11 +181,10 @@
             const filtered = allProducts.filter(p => (currentCategory === 'الكل' || p.cat === currentCategory) && p.name.toLowerCase().includes(q));
             grid.innerHTML = filtered.map(p => {
                 const qty = cart[p.name] ? cart[p.name].qty : 0;
-                const imageSrc = p.img && p.img.startsWith('http') ? p.img : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random&color=fff`;
                 return `<div class="bg-white p-4 rounded-3xl shadow-sm flex justify-between items-center product-card border border-gray-100">
                     <div class="flex items-center gap-4 text-right">
-                        <div class="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden cursor-pointer shadow-inner" onclick="openImageViewer('${imageSrc}', '${p.name}')">
-                            <img src="${imageSrc}" class="w-full h-full object-cover">
+                        <div class="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden cursor-pointer shadow-inner" onclick="openImageViewer('${p.img}', '${p.name}')">
+                            <img src="${p.img}" class="w-full h-full object-cover">
                         </div>
                         <div><h3 class="font-bold text-gray-800 text-sm">${p.name}</h3><p class="text-blue-700 font-black mt-1">${p.price.toLocaleString()} د.ع</p></div>
                     </div>
@@ -193,7 +206,6 @@
 
         function sendToWhatsApp() {
             const addr = document.getElementById('cust-address').value.trim() || "لم يذكر";
-            const now = new Date();
             let msg = `*وصـــل مـاركـت الـكـابـيـنـة*%0a━━━━━━━━━━━━━━━%0a`;
             for (let id in cart) msg += `• ${id} (×${cart[id].qty}) = ${(cart[id].qty * cart[id].price).toLocaleString()} د.ع%0a`;
             msg += `━━━━━━━━━━━━━━━%0a*💰 الإجمالي: ${document.getElementById('final-price').innerText} د.ع*%0a*📍 العنوان:* ${addr}`;
